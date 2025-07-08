@@ -140,3 +140,14 @@ def set_time(year, month, day, hour, minute, second):
 - Use checksums or digital signatures per data entry.
 - Store boot time/power loss logs for auditing.
 - Lock the RTC clock if needed (can only be set once during initial setup).
+
+
+## ☕ Support My Work
+
+<div align="center">
+
+If you find my projects helpful, consider supporting my open-source contributions!
+
+[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/R6R3LMURG)
+
+</div>
