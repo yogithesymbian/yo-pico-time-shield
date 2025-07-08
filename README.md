@@ -133,3 +133,10 @@ def set_time(year, month, day, hour, minute, second):
 // set_time(now[0], now[1], now[2], now[3], now[4], now[5])
 
 ```
+
+
+💡 Bonus: Advanced Anti-Manipulation Tips
+
+- Use checksums or digital signatures per data entry.
+- Store boot time/power loss logs for auditing.
+- Lock the RTC clock if needed (can only be set once during initial setup).
