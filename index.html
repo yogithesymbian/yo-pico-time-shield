@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YoPicoTime Shield - Anti-Manipulation RTC Solution | Raspberry Pi Pico DS3231</title>
+    <meta name="description" content="Revolutionary offline-first time protection solution using Raspberry Pi Pico and DS3231 RTC. Prevent device time manipulation in Flutter apps with hardware-based timestamp verification.">
+    <meta name="keywords" content="Raspberry Pi Pico, DS3231, RTC, Flutter, offline mode, time manipulation, hardware security, MicroPython">
+    <meta name="author" content="YoPicoTime Shield">
+    <meta property="og:title" content="YoPicoTime Shield - Anti-Manipulation RTC Solution">
+    <meta property="og:description" content="Revolutionary offline-first time protection solution using Raspberry Pi Pico and DS3231 RTC">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yo-pico-time-shield.vercel.app">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="YoPicoTime Shield - Anti-Manipulation RTC Solution">
+    <meta name="twitter:description" content="Revolutionary offline-first time protection solution using Raspberry Pi Pico and DS3231 RTC">
+    
+    <link rel="canonical" href="https://yo-pico-time-shield.vercel.app">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-glow: #00f5ff;
+            --secondary-glow: #ff00aa;
+            --accent-glow: #39ff14;
+            --bg-dark: #0a0a0f;
+            --bg-darker: #050508;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 245, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 170, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(57, 255, 20, 0.05) 0%, transparent 50%);
+            z-index: -1;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+        
+        /* Glass morphism effect */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+        }
+        
+        .glow-text {
+            background: linear-gradient(45deg, var(--primary-glow), var(--secondary-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(0, 245, 255, 0.5));
+        }
+        
+        .glow-box {
+            box-shadow: 
+                0 0 40px rgba(0, 245, 255, 0.3),
+                inset 0 0 40px rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-glow);
+            text-decoration: none;
+            filter: drop-shadow(0 0 10px rgba(0, 245, 255, 0.5));
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary-glow);
+            filter: drop-shadow(0 0 10px rgba(0, 245, 255, 0.5));
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 2rem;
+            position: relative;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(45deg, var(--primary-glow), var(--secondary-glow));
+            color: var(--bg-dark);
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 245, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .cta-button:hover::before {
+            left: 100%;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 245, 255, 0.4);
+        }
+        
+        /* Features Grid */
+        .features {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .features h2 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 3rem;
+            color: var(--primary-glow);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, var(--primary-glow), var(--secondary-glow));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .feature-card:hover::before {
+            opacity: 0.1;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0, 245, 255, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            filter: drop-shadow(0 0 20px rgba(0, 245, 255, 0.5));
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-glow);
+        }
+        
+        /* Technical Specs */
+        .specs {
+            padding: 5rem 2rem;
+            background: var(--bg-darker);
+        }
+        
+        .specs-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        
+        .specs-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: var(--secondary-glow);
+        }
+        
+        .specs-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+        
+        .specs-list li {
+            padding: 0.5rem 0;
+            border-left: 3px solid var(--primary-glow);
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+            background: rgba(0, 245, 255, 0.05);
+        }
+        
+        .code-block {
+            background: var(--bg-dark);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--accent-glow);
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--glass-border);
+            background: var(--bg-darker);
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .social-links a {
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            color: var(--primary-glow);
+            filter: drop-shadow(0 0 10px rgba(0, 245, 255, 0.5));
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .specs-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+        }
+        
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary-glow);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">⏰ YoPicoTime Shield</a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#specs">Technical</a></li>
+                <li><a href="#download">Download</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="glow-text">YoPicoTime Shield</h1>
+            <p class="hero-subtitle">Revolutionary offline-first time protection solution using Raspberry Pi Pico and DS3231 RTC</p>
+            <a href="#features" class="cta-button">Discover the Solution</a>
+        </div>
+        <div class="particle" style="top: 10%; left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="top: 20%; right: 20%; animation-delay: 1s;"></div>
+        <div class="particle" style="bottom: 30%; left: 30%; animation-delay: 2s;"></div>
+        <div class="particle" style="bottom: 10%; right: 10%; animation-delay: 3s;"></div>
+    </section>
+
+    <section class="features" id="features">
+        <h2 class="fade-in">Why Choose YoPicoTime Shield?</h2>
+        <div class="features-grid">
+            <div class="feature-card glass glow-box fade-in">
+                <span class="feature-icon">🛡️</span>
+                <h3>Anti-Manipulation Protection</h3>
+                <p>Prevent users from manipulating device time to bypass app restrictions. Hardware-based timestamp verification ensures authenticity.</p>
+            </div>
+            <div class="feature-card glass glow-box fade-in">
+                <span class="feature-icon">📱</span>
+                <h3>Flutter Integration Ready</h3>
+                <p>Seamlessly integrate with your Flutter applications via USB serial communication. Perfect for offline-first applications.</p>
+            </div>
+            <div class="feature-card glass glow-box fade-in">
+                <span class="feature-icon">⚡</span>
+                <h3>Ultra-Low Power</h3>
+                <p>Raspberry Pi Pico with DS3231 RTC consumes minimal power while providing accurate timekeeping even when main device is off.</p>
+            </div>
+            <div class="feature-card glass glow-box fade-in">
+                <span class="feature-icon">🔧</span>
+                <h3>Easy Implementation</h3>
+                <p>Simple wiring, MicroPython code, and comprehensive documentation make setup straightforward for developers of all levels.</p>
+            </div>
+            <div class="feature-card glass glow-box fade-in">
+                <span class="feature-icon">💾</span>
+                <h3>Offline-First Design</h3>
+                <p>No internet dependency. Perfect for applications that need to work in remote areas or maintain functionality during network outages.</p>
+            </div>
+            <div class="feature-card glass glow-box fade-in">
+                <span class="feature-icon">🔒</span>
+                <h3>Tamper-Resistant</h3>
+                <p>Hardware-based solution with optional digital signatures and checksums for enterprise-grade security requirements.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="specs" id="specs">
+        <div class="specs-container">
+            <div class="specs-content fade-in">
+                <h2>Technical Specifications</h2>
+                <ul class="specs-list">
+                    <li><strong>Microcontroller:</strong> Raspberry Pi Pico (RP2040)</li>
+                    <li><strong>RTC Module:</strong> DS3231 with battery backup</li>
+                    <li><strong>Communication:</strong> USB Serial (CDC)</li>
+                    <li><strong>Programming:</strong> MicroPython</li>
+                    <li><strong>Power:</strong> 3.3V, <5mA operation</li>
+                    <li><strong>Accuracy:</strong> ±2ppm (±63 seconds/year)</li>
+                    <li><strong>Supported Platforms:</strong> Android, iOS, Windows, Linux</li>
+                </ul>
+                <p style="margin-top: 2rem; color: var(--text-secondary);">
+                    Compatible with any device that supports USB serial communication. 
+                    Perfect for Flutter applications requiring secure timestamp verification.
+                </p>
+            </div>
+            <div class="code-block fade-in">
+                <h3 style="color: var(--primary-glow); margin-bottom: 1rem;">🔌 Wiring Configuration</h3>
+                <pre>DS3231     ↔️     Raspberry Pi Pico
+--------------------------------
+VCC        →     3.3V (pin 36)
+GND        →     GND (pin 38)  
+SDA        →     GP0 (pin 1)
+SCL        →     GP1 (pin 2)
+
+📡 Serial Communication:
+Flutter → "yo_minta_jam"
+Pico   → "2025-07-08T13:14:30Z"</pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="download">
+        <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+            <h2 class="fade-in">Ready to Get Started?</h2>
+            <p class="fade-in" style="font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 3rem;">
+                Download the complete solution including MicroPython code, wiring diagrams, and Flutter integration examples.
+            </p>
+            <div class="fade-in">
+                <a href="https://github.com/yogithesymbian/yo-pico-time-shield" class="cta-button" style="margin-right: 1rem;">📥 Download Code</a>
+                <a href="https://github.com/yogithesymbian/yo-pico-time-shield#readme" class="cta-button" style="background: linear-gradient(45deg, var(--secondary-glow), var(--accent-glow));">📚 View Documentation</a>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="footer-content">
+            <div class="social-links">
+                <a href="https://github.com/yogithesymbian/yo-pico-time-shield" title="GitHub Repository">💻</a>
+                <a href="https://github.com/yogithesymbian" title="GitHub Profile">🐙</a>
+                <a href="https://gitlab.com/yogithesymbian" title="GitLab Profile">🦊</a>
+                <a href="mailto:contact@yopicotime.dev" title="Email">✉️</a>
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <h3 style="color: var(--primary-glow); margin-bottom: 1rem;">👨‍💻 Contributors</h3>
+                <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <a href="https://github.com/yogithesymbian" style="color: var(--text-secondary); text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; gap: 0.5rem;">
+                        <img src="https://github.com/yogithesymbian.png" alt="Yogi Arif Widodo" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary-glow);">
+                        <span>Yogi Arif Widodo</span>
+                    </a>
+                </div>
+                <p style="margin-top: 1rem; color: var(--text-secondary); font-style: italic;">
+                    "The tranquility of heart and soul."
+                </p>
+            </div>
+            <p>&copy; 2025 YoPicoTime Shield. Open source solution for time-sensitive applications.</p>
+            <p style="margin-top: 0.5rem; color: var(--text-secondary);">
+                Built with ❤️ for developers who need reliable, offline-first time protection.
+            </p>
+            <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
+                Repository: <a href="https://github.com/yogithesymbian/yo-pico-time-shield" style="color: var(--primary-glow); text-decoration: none;">yo-pico-time-shield</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Fade in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Add some interactive particles
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 6 + 's';
+            particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+            document.body.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, 10000);
+        }
+
+        // Create particles periodically
+        setInterval(createParticle, 3000);
+
+        // Add glowing effect to navigation on scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.style.background = 'rgba(10, 10, 15, 0.95)';
+                nav.style.boxShadow = '0 10px 30px rgba(0, 245, 255, 0.1)';
+            } else {
+                nav.style.background = 'transparent';
+                nav.style.boxShadow = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
