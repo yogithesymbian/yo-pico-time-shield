@@ -78,7 +78,7 @@ while True:
     try:
         if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
             command = sys.stdin.readline().strip()
-            if command == "minta_jam":
+            if command == "yo_minta_jam":
                 print(rtc.get_time())
     except:
         pass
@@ -91,7 +91,7 @@ while True:
 
 Jika kamu sambung ke komputer, bisa pakai **Serial Monitor** (seperti Thonny, PuTTY, atau Arduino IDE):
 
-1. Kirim teks: `minta_jam`
+1. Kirim teks: `yo_minta_jam`
 2. Pico akan balas: `2025-07-08T13:14:30Z`
 
 ---
@@ -101,7 +101,7 @@ Jika kamu sambung ke komputer, bisa pakai **Serial Monitor** (seperti Thonny, Pu
 Flutter akan:
 
 * Connect via `usb_serial` (Android)
-* Kirim `minta_jam`
+* Kirim `yo_minta_jam`
 * Terima timestamp `YYYY-MM-DDTHH:MM:SSZ`
 
 ---
