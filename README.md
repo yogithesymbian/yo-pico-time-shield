@@ -1,7 +1,7 @@
 # against-device-time-offline-mode-any-device
 
 lets go 💡...
-![offline-first drawio (1)](https://github.com/user-attachments/assets/0aa5bc0b-8013-4e65-a2b1-8366bf51f55f)
+![yo-offline-first-embed drawio](https://github.com/user-attachments/assets/286bd25e-9f9b-426b-b444-1011951a742a)
 
 ---
 
